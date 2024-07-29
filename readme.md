@@ -1,1 +1,6 @@
-# logseq screenplay plugin
+# Logseq meets Nostr plugin
+
+Now you can send block of page to Nostr.
+
+Under development.
+

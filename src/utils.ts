@@ -1,4 +1,4 @@
-import { LSPluginUserEvents } from "@logseq/libs/dist/LSPlugin.user";
+import { LSPluginUserEvents } from "@logseq/libs/dist/LSPlugin.user.js";
 import React from "react";
 
 let _visible = logseq.isMainUIVisible;

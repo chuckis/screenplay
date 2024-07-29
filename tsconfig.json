@@ -1,20 +1,45 @@
 {
+  "paths": {
+    "nostr-tools/*": [
+      "./../node_modules/nostr-tools/lib/types/*"
+    ],
+    "@/*": [
+      "./*"
+    ],
+    "/*": [
+      "./node_modules/*"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "**/*.ts",
+    "next-env.d.ts"
+, "vite.config.js"  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vite/client"],
-    "allowJs": false,
+    "target": "esnext",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+    ],
+    "types": [
+      "vite/client"
+    ],
+    "allowJs": true,
     "skipLibCheck": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "importHelpers": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react"
   },
-  "include": ["./src"]
 }

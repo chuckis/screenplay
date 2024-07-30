@@ -34,8 +34,10 @@ const main = async () => {
       const pageName = currentPage.name
       console.log("Sends few blocks to Nostr");
       const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
-      const result = currentTree.map(a => a.content);
-      console.log(pageName, result);
+      const result: string[] = currentTree.map(a => a.content);
+      let pageContent: string = `${pageName}` + `\n` + `${result.join(` \n`)}`;
+      console.log(pageContent);
+      Nostrit(pageContent)
     }
   )
 

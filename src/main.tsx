@@ -27,6 +27,14 @@ const main = async () => {
       Nostrit(currentBlockText);
     })
 
+  logseq.App.registerPageMenuItem('Send page to Nostr', 
+    async (e) => {
+      console.log("Sends current page to Nostr");
+      const currentPage = await logseq.Editor.getCurrentPage()
+      console.log(currentPage);
+    }
+  )
+
   const root = ReactDOM.createRoot(document.getElementById("app")!);
 
   root.render(

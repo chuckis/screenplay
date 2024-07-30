@@ -27,11 +27,15 @@ const main = async () => {
       Nostrit(currentBlockText);
     })
 
-  logseq.App.registerPageMenuItem('Send page to Nostr', 
+  logseq.App.registerPageMenuItem('Send Page to Nostr', 
     async (e) => {
-      console.log("Sends current page to Nostr");
       const currentPage = await logseq.Editor.getCurrentPage()
-      console.log(currentPage);
+      const pageId = currentPage.uuid
+      const pageName = currentPage.name
+      console.log("Sends few blocks to Nostr");
+      const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
+      const result = currentTree.map(a => a.content);
+      console.log(pageName, result);
     }
   )
 

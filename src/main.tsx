@@ -6,7 +6,7 @@ import "./index.css";
 
 import { logseq as PL } from "../package.json";
 
-import { Nostrit } from "./Nostrservice.js";
+import { publishBlock, publishPage } from "./Nostrservice.js";
 
 
 const css = (t, ...args) => String.raw(t, ...args);
@@ -17,27 +17,27 @@ const main = async () => {
 
   console.log('Plugin loaded!')
 
-  logseq.Editor.registerBlockContextMenuItem('Send block to Nostr',
+  logseq.Editor.registerBlockContextMenuItem('Publish block to Nostr',
     async (e) => {
       const blockUUID = e.uuid
       // 1 get the content of the block
-      const currentBlock: any = await logseq.Editor.getBlock(blockUUID) // TIL AWAIT :D
-      const currentBlockText = currentBlock.content
+      const currentBlock = await logseq.Editor.getBlock(blockUUID) // TIL AWAIT :D
+      const currentBlockText: string = currentBlock.content
       console.log(currentBlockText);
-      Nostrit(currentBlockText);
+      publishBlock(currentBlockText);
     })
 
-  logseq.App.registerPageMenuItem('Send Page to Nostr', 
+  logseq.App.registerPageMenuItem('Publish Page to Nostr', 
     async (e) => {
       const currentPage = await logseq.Editor.getCurrentPage()
       const pageId = currentPage.uuid
-      const pageName = currentPage.name
-      console.log("Sends few blocks to Nostr");
+      const pageTitle: string = currentPage.name
+      console.log("publishing page to Nostr");
       const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
       const result: string[] = currentTree.map(a => a.content);
-      let pageContent: string = `${pageName}` + `\n` + `${result.join(` \n`)}`;
-      console.log(pageContent);
-      Nostrit(pageContent)
+      let pageContent: string = `${result.join(` \n`)}`;
+      console.log(pageContent, pageTitle);
+      publishPage(pageTitle, pageContent)
     }
   )
 

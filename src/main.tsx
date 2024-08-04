@@ -7,6 +7,7 @@ import "./index.css";
 import { logseq as PL } from "../package.json";
 
 import { publishBlock, publishPage } from "./Nostrservice.js";
+import { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.js";
 
 
 const css = (t, ...args) => String.raw(t, ...args);
@@ -27,7 +28,7 @@ const main = async () => {
       publishBlock(currentBlockText);
     })
 
-  logseq.App.registerPageMenuItem('Publish Page to Nostr', 
+  logseq.App.registerPageMenuItem('Publish Page to Nostr',
     async (e) => {
       const currentPage = await logseq.Editor.getCurrentPage()
       const pageId = currentPage.uuid
@@ -49,40 +50,33 @@ const main = async () => {
     </React.StrictMode>
   );
 
-  function createModel() {
-    return {
-      show() {
-        logseq.showMainUI();
-      },
-    };
-  }
-
-  logseq.provideModel(createModel());
   logseq.setMainUIInlineStyle({
+    position: 'fixed',
     zIndex: 11,
   });
 
-  const openIconName = "NostrPlugin";
+  const settingsButton = "NostrPlugin"  // Creating a unique key for the button
 
-  logseq.provideStyle(css`
-    .${openIconName} {
-      opacity: 0.55;
-      font-size: 20px;
-      margin-top: 4px;
-    }
-
-    .${openIconName}:hover {
-      opacity: 0.9;
-    }
-  `);
-
-  logseq.App.registerUIItem("toolbar", {
-    key: openIconName,
+  // Create a button
+  logseq.App.registerUIItem('toolbar', {
+    key: settingsButton,
     template: `
-      <div data-on-click="show" class="${openIconName}">⚡</div>
+<div>
+  <a class="button icon" data-on-click="${settingsButton}" id="${settingsButton}" style="font-size: 16px" title="Plugin settings">⚡</a>
+</div>
     `,
-  });
+  })
 
+  // Event
+  logseq.provideModel({
+    [settingsButton]: () => eventA(),
+  })
+
+  const eventA = () => {
+    //Process when button is pressed here
+    console.log("EventA happen!")
+    logseq.showSettingsUI();
+  }
 }
 
 logseq.ready(main).catch(console.error);

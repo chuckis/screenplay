@@ -18,11 +18,30 @@ const main = async () => {
 
   console.log('Plugin loaded!')
 
+  let settings: SettingSchemaDesc[] = [
+    
+    {
+      key: "nsec",
+      type: "string",
+      title: "Enter your nsec",
+      description: "Enter your nsec",
+      default: "somensec "
+    },
+  ]
+
+  logseq.useSettingsSchema(settings)
+
+  function updateSettings() {
+    console.log("Settings changed! ", `${logseq.settings.nsec}`)
+  }
+
+  logseq.onSettingsChanged(updateSettings);
+
   logseq.Editor.registerBlockContextMenuItem('Publish block to Nostr',
     async (e) => {
       const blockUUID = e.uuid
       // 1 get the content of the block
-      const currentBlock = await logseq.Editor.getBlock(blockUUID) // TIL AWAIT :D
+      const currentBlock = await logseq.Editor.getBlock(blockUUID)
       const currentBlockText: string = currentBlock.content
       console.log(currentBlockText);
       publishBlock(currentBlockText);
@@ -74,7 +93,6 @@ const main = async () => {
 
   const eventA = () => {
     //Process when button is pressed here
-    console.log("EventA happen!")
     logseq.showSettingsUI();
   }
 }

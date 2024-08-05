@@ -1,10 +1,10 @@
 import { finalizeEvent } from "nostr-tools/pure";
 import { Relay } from "nostr-tools/relay";
 import { decode } from "nostr-tools/nip19";
-import { keys } from "./keys.js" // import a nsec string from outta git control file. 
 
 export async function publishBlock(block:string): Promise<void> {
-    const sk = decode(keys.pk).data
+
+    const sk = decode(logseq.settings.nsec).data as Uint8Array;
     const relay = await Relay.connect('wss://relay.primal.net')
     console.log(`connected to ${relay.url}`)
 
@@ -20,7 +20,7 @@ export async function publishBlock(block:string): Promise<void> {
 }
 
 export async function publishPage(title:string, block:string): Promise<void> {
-  const sk = decode(keys.pk).data
+  const sk = decode(logseq.settings.nsec).data as Uint8Array;
   const relay = await Relay.connect('wss://relay.primal.net')
   console.log(`connected to ${relay.url}`)
 

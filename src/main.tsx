@@ -14,11 +14,7 @@ const css = (t, ...args) => String.raw(t, ...args);
 
 const pluginId = PL.id;
 
-const main = async () => {
-
-  console.log('Plugin loaded!')
-
-  let settings: SettingSchemaDesc[] = [
+export const settings: SettingSchemaDesc[] = [
     
     {
       key: "nsec",
@@ -29,10 +25,15 @@ const main = async () => {
     },
   ]
 
+const main = async () => {
+
+  console.log('Plugin loaded!')
+
+
   logseq.useSettingsSchema(settings)
 
   function updateSettings() {
-    console.log("Settings changed! ", `${logseq.settings.nsec}`)
+    console.log("Settings changed! ", `${logseq.settings.nsec}`) // 
   }
 
   logseq.onSettingsChanged(updateSettings);
@@ -40,7 +41,6 @@ const main = async () => {
   logseq.Editor.registerBlockContextMenuItem('Publish block to Nostr',
     async (e) => {
       const blockUUID = e.uuid
-      // 1 get the content of the block
       const currentBlock = await logseq.Editor.getBlock(blockUUID)
       const currentBlockText: string = currentBlock.content
       console.log(currentBlockText);

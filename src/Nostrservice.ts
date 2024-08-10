@@ -1,38 +1,44 @@
 import { finalizeEvent } from "nostr-tools/pure";
 import { Relay } from "nostr-tools/relay";
-import { decode } from "nostr-tools/nip19";
 
-export async function publishBlock(block:string): Promise<void> {
-
-    const sk = decode(logseq.settings.nsec).data as Uint8Array;
-    const relay = await Relay.connect('wss://relay.primal.net')
-    console.log(`connected to ${relay.url}`)
-
-		let eventTemplate = {
-				kind: 1,
-				created_at: Math.floor(Date.now() / 1000),
-				tags: [],
-				content: block,
-			};
-    let event = finalizeEvent(eventTemplate, sk)
-      await relay.publish(event)
-      relay.close();
-}
-
-export async function publishPage(title:string, block:string): Promise<void> {
-  const sk = decode(logseq.settings.nsec).data as Uint8Array;
-  const relay = await Relay.connect('wss://relay.primal.net')
-  console.log(`connected to ${relay.url}`)
-
-  let eventTemplate = {
+type EventTemplate = {
+  kind: number;
+  created_at: number;
+  tags: string[][];
+  content: string;
+};
+export class NostrService {
+  private relayUrl: string;
+  private secretKey: Uint8Array;
+  constructor(relayUrl: string, secretKey: Uint8Array) {
+    this.relayUrl = relayUrl;
+    this.secretKey = secretKey;
+  }
+  private async connectRelay(): Promise<Relay> {
+    const relay = await Relay.connect(this.relayUrl);
+    console.log(`connected to ${relay.url}`);
+    return relay;
+  }
+  private createEventTemplate(content: string, tags: string[][] = []): EventTemplate {
+    return {
       kind: 1,
       created_at: Math.floor(Date.now() / 1000),
-      tags: [
-        ["title", title],
-      ],
-      content: block,
+      tags: tags,
+      content: content,
     };
-  let event = finalizeEvent(eventTemplate, sk)
-    await relay.publish(event)
+  }
+  private async publishEvent(eventTemplate: EventTemplate): Promise<void> {
+    const relay = await this.connectRelay();
+    const event = finalizeEvent(eventTemplate, this.secretKey);
+    await relay.publish(event);
     relay.close();
+  }
+  public async publishBlock(block: string): Promise<void> {
+    const eventTemplate = this.createEventTemplate(block);
+    await this.publishEvent(eventTemplate);
+  }
+  public async publishPage(title: string, block: string): Promise<void> {
+    const eventTemplate = this.createEventTemplate(block, [["title", title]]);
+    await this.publishEvent(eventTemplate);
+  }
 }

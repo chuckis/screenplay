@@ -6,7 +6,8 @@ import "./index.css";
 
 import { logseq as PL } from "../package.json";
 
-import { publishBlock, publishPage } from "./Nostrservice.js";
+import { NostrService } from "./Nostrservice.js";
+import { decode } from "nostr-tools/nip19";
 import { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.js";
 
 
@@ -38,13 +39,16 @@ const main = async () => {
 
   logseq.onSettingsChanged(updateSettings);
 
+  const secretKey = decode(logseq.settings.nsec).data as Uint8Array;  
+  const service = new NostrService('wss://relay.primal.net', secretKey);
+
   logseq.Editor.registerBlockContextMenuItem('Publish block to Nostr',
     async (e) => {
       const blockUUID = e.uuid
       const currentBlock = await logseq.Editor.getBlock(blockUUID)
       const currentBlockText: string = currentBlock.content
-      console.log(currentBlockText);
-      publishBlock(currentBlockText);
+      await service.publishBlock(currentBlockText);
+      logseq.UI.showMsg("Block just published!");
     })
 
   logseq.App.registerPageMenuItem('Publish Page to Nostr',
@@ -56,8 +60,8 @@ const main = async () => {
       const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
       const result: string[] = currentTree.map(a => a.content);
       let pageContent: string = `${result.join(` \n`)}`;
-      console.log(pageContent, pageTitle);
-      publishPage(pageTitle, pageContent)
+      await service.publishPage(pageTitle, pageContent);
+      logseq.UI.showMsg("Page just published!");
     }
   )
 

@@ -40,6 +40,6 @@
   },
   "logseq": {
     "id": "nostrplugin",
-    "icon": "./logo.svg"
+    "icon": "./nostr.svg"
   }
 }

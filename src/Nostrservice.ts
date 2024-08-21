@@ -1,6 +1,8 @@
 import { finalizeEvent } from "nostr-tools/pure";
 import { Relay } from "nostr-tools/relay";
 
+const LONG_FORM = 30023;
+
 type EventTemplate = {
   kind: number;
   created_at: number;
@@ -19,9 +21,9 @@ export class NostrService {
     console.log(`connected to ${relay.url}`);
     return relay;
   }
-  private createEventTemplate(content: string, tags: string[][] = []): EventTemplate {
+  private createEventTemplate(content: string, tags: string[][] = [], kind?: number): EventTemplate {
     return {
-      kind: 1,
+      kind: kind,
       created_at: Math.floor(Date.now() / 1000),
       tags: tags,
       content: content,
@@ -38,7 +40,7 @@ export class NostrService {
     await this.publishEvent(eventTemplate);
   }
   public async publishPage(title: string, block: string): Promise<void> {
-    const eventTemplate = this.createEventTemplate(block, [["title", title]]);
+    const eventTemplate = this.createEventTemplate(block, [["title", title]], LONG_FORM);
     await this.publishEvent(eventTemplate);
   }
 }

@@ -28,7 +28,8 @@ jobs:
           node-version: "20"
       - name: Install, build, test
         run: |
-          npm install
+          npm i -g pnpm
+          pnpm install
           npm run build
       - name: Install zip
         uses: montudor/action-zip@v1

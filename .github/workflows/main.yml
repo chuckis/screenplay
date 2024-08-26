@@ -4,6 +4,7 @@ name: Releases
 
 env:
   PLUGIN_NAME: logseq-nostr
+  VERSION: ${{ github.ref }}
 
 # Controls when the action will run.
 on:
@@ -26,14 +27,45 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "20"
-      - name: Install, build, test
+      - name: Install, build
         run: |
           npm i -g pnpm
           pnpm install
           npm run build
-      - name: Install zip
-        uses: montudor/action-zip@v1
-      - name: Release
-        run: npx semantic-release
+          mkdir ${{ env.PLUGIN_NAME }}
+          cp readme.md package.json nostr.svg logo.svg ${{ env.PLUGIN_NAME }}
+          mv dist ${{ env.PLUGIN_NAME }}
+          zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
+          
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref }}
+        with:
+          allowUpdates: true
+          draft: false
+          prerelease: false
+
+      - name: Upload zip file
+        id: upload_zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.PLUGIN_NAME }}.zip
+          asset_name: ${{ env.PLUGIN_NAME }}-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload package.json
+        id: upload_metadata
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./package.json
+          asset_name: package.json
+          asset_content_type: application/json

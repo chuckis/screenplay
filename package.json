@@ -1,6 +1,6 @@
 {
-  "name": "logseq-screenplay",
-  "version": "0.0.0",
+  "name": "logseq-nostr",
+  "version": "0.0.1",
   "main": "dist/index.html",
   "scripts": {
     "dev": "vite",

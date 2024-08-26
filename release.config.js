@@ -1,5 +1,5 @@
 module.exports = {
-  branches: ["master"],
+  branches: ["release"],
   plugins: [
     [
       "@semantic-release/commit-analyzer",
@@ -26,7 +26,7 @@ module.exports = {
     [
       "@semantic-release/github",
       {
-        assets: "logseq-plugin-template-react-*.zip",
+        assets: "logseq-nostr-*.zip",
       },
     ],
   ],

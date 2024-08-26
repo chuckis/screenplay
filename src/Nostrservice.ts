@@ -23,7 +23,7 @@ export class NostrService {
   }
   private createEventTemplate(content: string, tags: string[][] = [], kind?: number): EventTemplate {
     return {
-      kind: kind,
+      kind: kind || 1,
       created_at: Math.floor(Date.now() / 1000),
       tags: tags,
       content: content,

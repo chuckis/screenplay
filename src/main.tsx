@@ -1,82 +1,107 @@
 import "@logseq/libs";
-import React from "react";
-import * as ReactDOM from "react-dom/client";
-import App from "./App.js";
-import "./index.css";
 
-import { logseq as PL } from "../package.json";
-
-import { NostrService } from "./Nostrservice.js";
+import { NostrService, type Nip07Nostr } from "./Nostrservice.js";
 import { decode } from "nostr-tools/nip19";
-import { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin.js";
+import { SettingSchemaDesc, BlockEntity } from "@logseq/libs/dist/LSPlugin.js";
 
-
-const css = (t, ...args) => String.raw(t, ...args);
-
-const pluginId = PL.id;
+declare global {
+  interface Window {
+    nostr?: Nip07Nostr;
+  }
+}
 
 export const settings: SettingSchemaDesc[] = [
-    
     {
       key: "nsec",
       type: "string",
       title: "Enter your nsec",
       description: "Enter your nsec",
-      default: "somensec "
+      default: ""
+    },
+    {
+      key: "relay",
+      type: "string",
+      title: "Nostr relay URL",
+      description: "WebSocket URL of the relay to publish to",
+      default: "wss://relay.primal.net"
     },
   ]
+
+function getSecretKey(nsec?: string): Uint8Array | null {
+  if (!nsec) return null;
+  try {
+    const decoded = decode(nsec.trim());
+    return decoded.type === "nsec" ? decoded.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function flattenPageBlocks(blocks: BlockEntity[], depth = 0): string {
+  return blocks
+    .map((block) => {
+      const prefix = depth > 0 ? "- ".repeat(depth) : "";
+      const children =
+        block.children && block.children.length > 0
+          ? "\n" + flattenPageBlocks(block.children as BlockEntity[], depth + 1)
+          : "";
+      return `${prefix}${block.content}${children}`;
+    })
+    .join("\n");
+}
 
 const main = async () => {
 
   console.log('Plugin loaded!')
 
-
   logseq.useSettingsSchema(settings)
 
-  function updateSettings() {
-    console.log("Settings changed! ", `${logseq.settings.nsec}`) // 
+  let service = new NostrService("wss://relay.primal.net", null);
+
+  function rebuildService() {
+    const relayUrl = (logseq.settings.relay as string) || "wss://relay.primal.net";
+    const secretKey = getSecretKey(logseq.settings.nsec as string);
+    const nip07 = window.nostr ?? null;
+    if (!secretKey && !nip07) {
+      console.warn("No signing method configured. Set an nsec in settings or enable a NIP-07 extension.");
+    }
+    service = new NostrService(relayUrl, secretKey, nip07);
   }
 
-  logseq.onSettingsChanged(updateSettings);
+  rebuildService();
 
-  const secretKey = decode(logseq.settings.nsec).data as Uint8Array;  
-  const service = new NostrService('wss://relay.primal.net', secretKey);
+  logseq.onSettingsChanged(rebuildService);
 
   logseq.Editor.registerBlockContextMenuItem('Publish block to Nostr',
     async (e) => {
-      const blockUUID = e.uuid
-      const currentBlock = await logseq.Editor.getBlock(blockUUID)
-      const currentBlockText: string = currentBlock.content
-      await service.publishBlock(currentBlockText);
-      logseq.UI.showMsg("Block just published!");
+      try {
+        const blockUUID = e.uuid
+        const currentBlock = await logseq.Editor.getBlock(blockUUID)
+        const currentBlockText: string = currentBlock.content
+        await service.publishBlock(currentBlockText);
+        logseq.UI.showMsg("Block just published!");
+      } catch (err) {
+        console.error("Failed to publish block to Nostr:", err);
+        logseq.UI.showMsg(`Failed to publish block: ${err instanceof Error ? err.message : err}`, "error");
+      }
     })
 
   logseq.App.registerPageMenuItem('Publish Page to Nostr',
     async (e) => {
-      const currentPage = await logseq.Editor.getCurrentPage()
-      const pageId = currentPage.uuid
-      const pageTitle: string = currentPage.name
-      console.log("publishing page to Nostr");
-      const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
-      const result: string[] = currentTree.map(a => a.content);
-      let pageContent: string = `${result.join(` \n`)}`;
-      await service.publishPage(pageTitle, pageContent);
-      logseq.UI.showMsg("Page just published!");
+      try {
+        const currentPage = await logseq.Editor.getCurrentPage()
+        const pageId = currentPage.uuid
+        const pageTitle: string = currentPage.name
+        const currentTree = await logseq.Editor.getPageBlocksTree(pageId)
+        const pageContent = flattenPageBlocks(currentTree);
+        await service.publishPage(pageTitle, pageContent);
+        logseq.UI.showMsg("Page just published!");
+      } catch (err) {
+        console.error("Failed to publish page to Nostr:", err);
+        logseq.UI.showMsg(`Failed to publish page: ${err instanceof Error ? err.message : err}`, "error");
+      }
     }
   )
-
-  const root = ReactDOM.createRoot(document.getElementById("app")!);
-
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-
-  logseq.setMainUIInlineStyle({
-    position: 'fixed',
-    zIndex: 11,
-  });
 
   const settingsButton = "NostrPlugin"  // Creating a unique key for the button
 

@@ -1,15 +1,4 @@
 {
-  "paths": {
-    "nostr-tools/*": [
-      "./../node_modules/nostr-tools/lib/types/*"
-    ],
-    "@/*": [
-      "./*"
-    ],
-    "/*": [
-      "./node_modules/*"
-    ]
-  },
   "include": [
     "src/**/*",
     "**/*.ts",
@@ -23,7 +12,7 @@
     "target": "esnext",
     "lib": [
       "DOM",
-      "DOM.Iterable",
+      "DOM.Iterable"
     ],
     "types": [
       "vite/client"
@@ -41,5 +30,5 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react"
-  },
+  }
 }
